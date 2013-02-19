@@ -16,7 +16,7 @@
 
 <resources>
     <color name="magic_flame">#00FFFFFF</color>
-    <color name="button_text">#FFFFFFFF</color>
+    <color name="button_text">#FFFF8E00</color>
     <color name="pressed_color">#07547B</color>
     <color name="history_result">#FFC40C</color>
     <color name="background">#ff000000</color>
