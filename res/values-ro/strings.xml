@@ -36,21 +36,10 @@
     <string name="e" msgid="1377847800971731483">"e"</string>
     <string name="ln" msgid="6888500680285403344">"ln"</string>
     <string name="lg" msgid="873623857385418182">"log"</string>
+    <string name="leftParen" msgid="4850643713953092099">"("</string>
+    <string name="rightParen" msgid="3177971166159324016">")"</string>
     <string name="basic" msgid="7691469861698059753">"Panou de bază"</string>
     <string name="advanced" msgid="7122495413742976492">"Panou avansat"</string>
     <string name="clear_history" msgid="8458043980601165012">"Ştergeţi istoricul"</string>
     <string name="text_copied_toast" msgid="5801480710472541833">"Textul a fost copiat."</string>
-
-    <string name="matrix">"Panou matrice"</string>
-    <string name="graph">"Panou grafic"</string>
-    <string name="function">"Panou funcție"</string>
-    <string name="hexPanel">"Panou hex"</string>
-    <string name="copy">"Copiați \"%s\""</string>
-    <string name="remove_from_history">"Ștergeți din istoric"</string>
-
-    <string name="settings">"Setări"</string>
-    <string name="showHistory">"Arătați istoricul"</string>
-    <string name="hideHistory">"Ascundeți istoricul"</string>
-
-    <string name="returnToBasic">"Întoarcere la panoul de bază"</string>
 </resources>

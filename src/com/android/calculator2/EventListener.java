@@ -16,26 +16,28 @@
 
 package com.android.calculator2;
 
-import com.android.calculator2.Calculator.Panel;
-import com.android.calculator2.Logic.Mode;
-
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
-class EventListener implements View.OnKeyListener,
-                               View.OnClickListener,
-                               View.OnLongClickListener {
+import com.android.calculator2.BaseModule.Mode;
+import com.android.calculator2.Calculator.Panel;
+import com.android.calculator2.view.MatrixEditText;
+import com.android.calculator2.view.MatrixInverseView;
+import com.android.calculator2.view.MatrixTransposeView;
+import com.android.calculator2.view.MatrixView;
+
+public class EventListener implements View.OnKeyListener, View.OnClickListener, View.OnLongClickListener {
     Context mContext;
     Logic mHandler;
     ViewPager mPager;
-    private SharedPreferences mPreferences;
+    ViewPager mSmallPager;
+    ViewPager mLargePager;
 
     private String mErrorString;
     private String mModString;
@@ -43,29 +45,36 @@ class EventListener implements View.OnKeyListener,
     private String mY;
     private String mDX;
     private String mDY;
-    private String solveForX;
-    private String solveForY;
 
     void setHandler(Context context, Logic handler, ViewPager pager) {
+        setHandler(context, handler, pager, null, null);
+    }
+
+    void setHandler(Context context, Logic handler, ViewPager smallPager, ViewPager largePager) {
+        setHandler(context, handler, null, smallPager, largePager);
+    }
+
+    private void setHandler(Context context, Logic handler, ViewPager pager, ViewPager smallPager, ViewPager largePager) {
         mContext = context;
         mHandler = handler;
         mPager = pager;
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mSmallPager = smallPager;
+        mLargePager = largePager;
 
-        mErrorString = mContext.getResources().getString(R.string.error);
-        mModString = mContext.getResources().getString(R.string.mod);
-        mX = mContext.getResources().getString(R.string.X);
-        mY = mContext.getResources().getString(R.string.Y);
-        mDX = mContext.getResources().getString(R.string.dx);
-        mDY = mContext.getResources().getString(R.string.dy);
-        solveForX = mContext.getResources().getString(R.string.solveForX);
-        solveForY = mContext.getResources().getString(R.string.solveForY);
+        mErrorString = mContext.getString(R.string.error);
+        mModString = mContext.getString(R.string.mod);
+        mX = mContext.getString(R.string.X);
+        mY = mContext.getString(R.string.Y);
+        mDX = mContext.getString(R.string.dx);
+        mDY = mContext.getString(R.string.dy);
     }
 
     @Override
     public void onClick(View view) {
+        View v;
+        EditText active;
         int id = view.getId();
-        switch (id) {
+        switch(id) {
         case R.id.del:
             mHandler.onDelete();
             break;
@@ -75,140 +84,199 @@ class EventListener implements View.OnKeyListener,
             break;
 
         case R.id.equal:
-            if (mHandler.getText().contains(mX) ||
-                mHandler.getText().contains(mY)) {
-                if (!mHandler.getText().contains("=")) {
+            if(mHandler.getText().contains(mX) || mHandler.getText().contains(mY)) {
+                if(!mHandler.getText().contains("=")) {
                     mHandler.insert("=");
+                    returnToBasic();
                 }
                 break;
             }
             mHandler.onEnter();
             break;
 
-        case R.id.eigenvalue:
-            mHandler.findEigenvalue();
-            break;
-
-        case R.id.determinant:
-            mHandler.findDeterminant();
-            break;
-
-        case R.id.solve:
-            mHandler.solveMatrix();
-            break;
-
-        case R.id.solveForX:
-            WolframAlpha.solve(mHandler.getText() + ", " + solveForX, new Handler(),
-                    new WolframAlpha.ResultsRunnable() {
-                        @Override
-                        public void run() {
-                            String text = "";
-                            for(String s : results) {
-                                text += s + ", ";
-                            }
-                            if(text.length()>2) text = text.substring(0, text.length()-2);
-                            mHandler.setText(text);
-                        }
-                    },
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            mHandler.setText(mErrorString);
-                        }
-                    },
-                    mContext.getResources().getString(R.string.wolframAlphaKey));
-            break;
-
-        case R.id.solveForY:
-            WolframAlpha.solve(mHandler.getText() + ", " + solveForY, new Handler(),
-                    new WolframAlpha.ResultsRunnable() {
-                        @Override
-                        public void run() {
-                            String text = "";
-                            for(String s : results) {
-                                text += s + ", ";
-                            }
-                            if(text.length()>2) text = text.substring(0, text.length()-2);
-                            mHandler.setText(text);
-                        }
-                    },
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            mHandler.setText(mErrorString);
-                        }
-                    },
-                    mContext.getResources().getString(R.string.wolframAlphaKey));
-            break;
-
         case R.id.hex:
-            mHandler.setText(mHandler.setMode(Mode.HEXADECIMAL));
+            mHandler.setText(mHandler.mBaseModule.setMode(Mode.HEXADECIMAL));
             view.setBackgroundResource(R.color.pressed_color);
             ((View) view.getParent()).findViewById(R.id.bin).setBackgroundResource(R.drawable.btn_function);
             ((View) view.getParent()).findViewById(R.id.dec).setBackgroundResource(R.drawable.btn_function);
+            for(int i : mHandler.mBaseModule.bannedResourceInBinary) {
+                if(mPager != null) {
+                    v = mPager.findViewById(i);
+                }
+                else {
+                    v = mSmallPager.findViewById(i);
+                    if(v == null) v = mLargePager.findViewById(i);
+                }
+                v.setEnabled(true);
+            }
             break;
 
         case R.id.bin:
-            mHandler.setText(mHandler.setMode(Mode.BINARY));
+            mHandler.setText(mHandler.mBaseModule.setMode(Mode.BINARY));
             view.setBackgroundResource(R.color.pressed_color);
             ((View) view.getParent()).findViewById(R.id.hex).setBackgroundResource(R.drawable.btn_function);
             ((View) view.getParent()).findViewById(R.id.dec).setBackgroundResource(R.drawable.btn_function);
+            for(int i : mHandler.mBaseModule.bannedResourceInBinary) {
+                if(mPager != null) {
+                    v = mPager.findViewById(i);
+                }
+                else {
+                    v = mSmallPager.findViewById(i);
+                    if(v == null) v = mLargePager.findViewById(i);
+                }
+                v.setEnabled(false);
+            }
             break;
 
         case R.id.dec:
-            mHandler.setText(mHandler.setMode(Mode.DECIMAL));
+            mHandler.setText(mHandler.mBaseModule.setMode(Mode.DECIMAL));
             view.setBackgroundResource(R.color.pressed_color);
             ((View) view.getParent()).findViewById(R.id.bin).setBackgroundResource(R.drawable.btn_function);
             ((View) view.getParent()).findViewById(R.id.hex).setBackgroundResource(R.drawable.btn_function);
+            for(int i : mHandler.mBaseModule.bannedResourceInBinary) {
+                if(mPager != null) {
+                    v = mPager.findViewById(i);
+                }
+                else {
+                    v = mSmallPager.findViewById(i);
+                    if(v == null) v = mLargePager.findViewById(i);
+                }
+                v.setEnabled(true);
+            }
+            for(int i : mHandler.mBaseModule.bannedResourceInDecimal) {
+                if(mPager != null) {
+                    v = mPager.findViewById(i);
+                }
+                else {
+                    v = mSmallPager.findViewById(i);
+                    if(v == null) v = mLargePager.findViewById(i);
+                }
+                v.setEnabled(false);
+            }
+            break;
+
+        case R.id.matrix:
+            mHandler.insert(MatrixView.PATTERN);
+            returnToBasic();
+            break;
+
+        case R.id.matrix_inverse:
+            mHandler.insert(MatrixInverseView.PATTERN);
+            returnToBasic();
+            break;
+
+        case R.id.matrix_transpose:
+            mHandler.insert(MatrixTransposeView.PATTERN);
+            returnToBasic();
+            break;
+
+        case R.id.plus_row:
+            v = mHandler.mDisplay.getActiveEditText();
+            if(v instanceof MatrixEditText) ((MatrixEditText) v).getMatrixView().addRow();
+            break;
+
+        case R.id.minus_row:
+            v = mHandler.mDisplay.getActiveEditText();
+            if(v instanceof MatrixEditText) ((MatrixEditText) v).getMatrixView().removeRow();
+            break;
+
+        case R.id.plus_col:
+            v = mHandler.mDisplay.getActiveEditText();
+            if(v instanceof MatrixEditText) ((MatrixEditText) v).getMatrixView().addColumn();
+            break;
+
+        case R.id.minus_col:
+            v = mHandler.mDisplay.getActiveEditText();
+            if(v instanceof MatrixEditText) ((MatrixEditText) v).getMatrixView().removeColumn();
+            break;
+
+        case R.id.next:
+            active = mHandler.mDisplay.getActiveEditText();
+            if(active.getSelectionStart() == active.getText().length()) {
+                v = mHandler.mDisplay.getActiveEditText().focusSearch(View.FOCUS_FORWARD);
+                if(v != null) v.requestFocus();
+                active = mHandler.mDisplay.getActiveEditText();
+                active.setSelection(0);
+            }
+            else {
+                active.setSelection(active.getSelectionStart() + 1);
+            }
+            break;
+
+        case R.id.sign:
+            active = mHandler.mDisplay.getActiveEditText();
+            int selection = active.getSelectionStart();
+            if(active.getText().toString().matches(Logic.NUMBER)) {
+                if(active.getText().toString().startsWith(String.valueOf(Logic.MINUS))) {
+                    active.setText(active.getText().toString().substring(1));
+                    selection--;
+                }
+                else {
+                    active.setText(Logic.MINUS + active.getText().toString());
+                    selection++;
+                }
+                if(selection > active.length()) selection--;
+                if(selection < 0) selection = 0;
+                active.setSelection(selection);
+            }
             break;
 
         case R.id.parentheses:
             if(mHandler.getText().equals(mErrorString)) mHandler.setText("");
             if(mHandler.getText().contains("=")) {
                 String[] equation = mHandler.getText().split("=");
-                mHandler.setText(equation[0] + "=(" + equation[1] + ")");
+                if(equation.length > 1) {
+                    mHandler.setText(equation[0] + "=(" + equation[1] + ")");
+                }
+                else {
+                    mHandler.setText(equation[0] + "=()");
+                }
             }
-            else{
+            else {
                 mHandler.setText("(" + mHandler.getText() + ")");
             }
+            returnToBasic();
             break;
 
         case R.id.mod:
             if(mHandler.getText().equals(mErrorString)) mHandler.setText("");
             if(mHandler.getText().contains("=")) {
                 String[] equation = mHandler.getText().split("=");
-                if(equation.length>1) {
+                if(equation.length > 1) {
                     mHandler.setText(equation[0] + "=" + mModString + "(" + equation[1] + ",");
                 }
-                else{
+                else {
                     mHandler.insert(mModString + "(");
                 }
             }
-            else{
-                if(mHandler.getText().length()>0) {
+            else {
+                if(mHandler.getText().length() > 0) {
                     mHandler.setText(mModString + "(" + mHandler.getText() + ",");
                 }
-                else{
+                else {
                     mHandler.insert(mModString + "(");
                 }
             }
+            returnToBasic();
+            break;
+
+        case R.id.easter:
+            Toast.makeText(mContext, R.string.easter_egg, Toast.LENGTH_SHORT).show();
             break;
 
         default:
-            if (view instanceof Button) {
+            if(view instanceof Button) {
                 if(mHandler.getText().equals(mErrorString)) mHandler.setText("");
                 String text = ((Button) view).getText().toString();
-                if (text.equals(mDX) || text.equals(mDY)) {
+                if(text.equals(mDX) || text.equals(mDY)) {
                     // Do nothing
                 }
-                else if (text.length() >= 2) {
+                else if(text.length() >= 2) {
                     // Add paren after sin, cos, ln, etc. from buttons
                     text += "(";
                 }
                 mHandler.insert(text);
-                if (mPager != null && mPager.getCurrentItem() != Panel.BASIC.getOrder() && mPreferences.getBoolean("RETURN_TO_BASIC", mContext.getResources().getBoolean(R.bool.RETURN_TO_BASIC))) {
-                    mPager.setCurrentItem(Panel.BASIC.getOrder());
-                }
+                returnToBasic();
             }
         }
     }
@@ -219,20 +287,22 @@ class EventListener implements View.OnKeyListener,
         case R.id.del:
             mHandler.onClear();
             return true;
-        case R.id.determinant:
-            Toast.makeText(mContext, R.string.determinantDesc, Toast.LENGTH_SHORT).show();
-            return true;
-        case R.id.eigenvalue:
-            Toast.makeText(mContext, R.string.eigenvalueDesc, Toast.LENGTH_SHORT).show();
-            return true;
-        case R.id.dec:
-            Toast.makeText(mContext, R.string.decDesc, Toast.LENGTH_SHORT).show();
-            return true;
-        case R.id.bin:
-            Toast.makeText(mContext, R.string.binDesc, Toast.LENGTH_SHORT).show();
-            return true;
-        case R.id.hex:
-            Toast.makeText(mContext, R.string.hexDesc, Toast.LENGTH_SHORT).show();
+        }
+        if(view.getTag() != null) {
+            String text = (String) view.getTag();
+            if(!text.isEmpty()) {
+                Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        }
+        if(view instanceof TextView && ((TextView) view).getHint() != null) {
+            String text = ((TextView) view).getHint().toString();
+            if(text.length() >= 2) {
+                // Add paren after sin, cos, ln, etc. from buttons
+                text += "(";
+            }
+            mHandler.insert(text);
+            returnToBasic();
             return true;
         }
         return false;
@@ -242,25 +312,21 @@ class EventListener implements View.OnKeyListener,
     public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
         int action = keyEvent.getAction();
 
-        //Work-around for spurious key event from IME, bug #1639445
-        if (action == KeyEvent.ACTION_MULTIPLE && keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+        // Work-around for spurious key event from IME, bug #1639445
+        if(action == KeyEvent.ACTION_MULTIPLE && keyCode == KeyEvent.KEYCODE_UNKNOWN) {
             return true; // eat it
         }
 
-        //Calculator.log("KEY " + keyCode + "; " + action);
-
-        if (keyEvent.getUnicodeChar() == '=') {
-            if (action == KeyEvent.ACTION_UP) {
+        if(keyEvent.getUnicodeChar() == '=') {
+            if(action == KeyEvent.ACTION_UP) {
                 mHandler.onEnter();
             }
             return true;
         }
 
-        if (keyCode != KeyEvent.KEYCODE_DPAD_CENTER &&
-            keyCode != KeyEvent.KEYCODE_DPAD_UP &&
-            keyCode != KeyEvent.KEYCODE_DPAD_DOWN &&
-            keyCode != KeyEvent.KEYCODE_ENTER) {
-            if (keyEvent.isPrintingKey() && action == KeyEvent.ACTION_UP) {
+        if(keyCode != KeyEvent.KEYCODE_DPAD_CENTER && keyCode != KeyEvent.KEYCODE_DPAD_UP && keyCode != KeyEvent.KEYCODE_DPAD_DOWN
+                && keyCode != KeyEvent.KEYCODE_ENTER) {
+            if(keyEvent.isPrintingKey() && action == KeyEvent.ACTION_UP) {
                 // Tell the handler that text was updated.
                 mHandler.onTextChanged();
             }
@@ -268,14 +334,13 @@ class EventListener implements View.OnKeyListener,
         }
 
         /*
-           We should act on KeyEvent.ACTION_DOWN, but strangely
-           sometimes the DOWN event isn't received, only the UP.
-           So the workaround is to act on UP...
-           http://b/issue?id=1022478
+         * We should act on KeyEvent.ACTION_DOWN, but strangely sometimes the
+         * DOWN event isn't received, only the UP. So the workaround is to act
+         * on UP... http://b/issue?id=1022478
          */
 
-        if (action == KeyEvent.ACTION_UP) {
-            switch (keyCode) {
+        if(action == KeyEvent.ACTION_UP) {
+            switch(keyCode) {
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_DPAD_CENTER:
                 mHandler.onEnter();
@@ -291,5 +356,13 @@ class EventListener implements View.OnKeyListener,
             }
         }
         return true;
+    }
+
+    private boolean returnToBasic() {
+        if(mPager != null && mPager.getCurrentItem() != Panel.BASIC.getOrder() && CalculatorSettings.returnToBasic(mContext)) {
+            mPager.setCurrentItem(Panel.BASIC.getOrder());
+            return true;
+        }
+        return false;
     }
 }

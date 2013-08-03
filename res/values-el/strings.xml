@@ -28,62 +28,18 @@
     <string name="digit7" msgid="658125644218958447">"7"</string>
     <string name="digit8" msgid="3134686906411558886">"8"</string>
     <string name="digit9" msgid="765379157698748031">"9"</string>
-    <string name="A">A</string>
-    <string name="B">B</string>
-    <string name="C">C</string>
-    <string name="D">D</string>
-    <string name="E">E</string>
-    <string name="F">F</string>
-    <string name="X">X</string>
-    <string name="Y">Y</string>
-    <string name="del">ΔΙΑΓΡ.</string>
-    <string name="clear">ΚΑΘΑΡ.</string>
+    <string name="del" msgid="6248896117422989693">"ΔΙΑΓΡ."</string>
+    <string name="clear" msgid="8103610981407459768">"ΚΑΘΑΡ."</string>
     <string name="sin" msgid="6793866152659175277">"sin"</string>
     <string name="cos" msgid="6901841853098114414">"cos"</string>
     <string name="tan" msgid="7957459816738554960">"tan"</string>
     <string name="e" msgid="1377847800971731483">"e"</string>
     <string name="ln" msgid="6888500680285403344">"ln"</string>
     <string name="lg" msgid="873623857385418182">"log"</string>
-    <string name="basic">Βασικές πράξεις</string>
-    <string name="advanced">Σύνθετες συναρτήσεις</string>
-    <string name="matrix">Πίνακες</string>
-    <string name="graph">Γραφικές παράστασεις</string>
-    <string name="function">Συναρτήσεις</string>
-    <string name="hexPanel">Δεκαεξαδικές πράξεις</string>
+    <string name="leftParen" msgid="4850643713953092099">"("</string>
+    <string name="rightParen" msgid="3177971166159324016">")"</string>
+    <string name="basic" msgid="7691469861698059753">"Βασικές πράξεις"</string>
+    <string name="advanced" msgid="7122495413742976492">"Σύνθετες συναρτήσεις"</string>
     <string name="clear_history" msgid="8458043980601165012">"Εκκαθάριση ιστορικού"</string>
     <string name="text_copied_toast" msgid="5801480710472541833">"Το κείμενο αντιγράφηκε."</string>
-    <string name="copy">Αντιγραφή \"%s\"</string>
-    <string name="remove_from_history">Αφαίρεση από το ιστορικό</string>
-
-    <string name="dx">dX</string>
-    <string name="dy">dY</string>
-    <string name="solveForX">Λύση ως προς X</string>
-    <string name="solveForY">Λύση ως προς Y</string>
-    <string name="mod">mod</string>
-
-    <string name="defaultGraphTitle">Συνάρτηση</string>
-    <string name="graphTitle">Συνάρτηση: </string>
-
-    <string name="inverse">Inv</string>
-    <string name="determinant">Det</string>
-    <string name="eigenvalue">Eigen</string>
-    <string name="solve">Λύση</string>
-    <string name="dotProduct">Dot</string>
-    <string name="crossProduct">Cross</string>
-
-    <string name="hex">Hex</string>
-    <string name="bin">Bin</string>
-    <string name="dec">Dec</string>
-
-    <string name="hexDesc">Δεκαεξαδικό</string>
-    <string name="binDesc">Δυαδικό</string>
-    <string name="decDesc">Δεκαδικό</string>
-    <string name="determinantDesc">Ορίζουσα</string>
-    <string name="eigenvalueDesc">Ιδιοτιμές</string>
-    
-    <string name="settings">Ρυθμίσεις</string>
-    <string name="showHistory">Εμφάνιση ιστορικού</string>
-    <string name="hideHistory">Απόκρυψη ιστορικού</string>
-
-    <string name="returnToBasic">Επιστροφή στον πίνακα βασικών πράξεων</string>
 </resources>
